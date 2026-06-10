@@ -2,6 +2,7 @@ import React from 'react';
 import {
   TouchableOpacity,
   Text,
+  View,
   StyleSheet,
   ActivityIndicator,
   ViewStyle,
@@ -37,21 +38,19 @@ export const Button = ({
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled || loading}
-        style={[styles.container, style]}
+        style={[styles.primaryButton, style]}
         activeOpacity={0.8}
       >
-        <LinearGradient
-          colors={[Colors.gradientStart, Colors.gradientEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradient}
-        >
-          {loading ? (
-            <ActivityIndicator color={Colors.white} />
-          ) : (
+        {loading ? (
+          <ActivityIndicator color={Colors.white} />
+        ) : (
+          <>
             <Text style={[styles.textPrimary, textStyle]}>{title}</Text>
-          )}
-        </LinearGradient>
+            <View style={styles.arrowCircle}>
+              <Text style={styles.arrow}>→</Text>
+            </View>
+          </>
+        )}
       </TouchableOpacity>
     );
   }
@@ -90,19 +89,7 @@ export const Button = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    borderRadius: Spacing.radiusFull,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  gradient: {
-    paddingVertical: 16,
-    paddingHorizontal: Spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
+  
   darkButton: {
     backgroundColor: Colors.black,
     paddingVertical: 16,
@@ -122,12 +109,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
-  textPrimary: {
-    ...Typography.button,
-    color: Colors.white,
-  },
+  
   textOutline: {
     ...Typography.button,
     color: Colors.pink,
+  },
+  primaryButton: {
+    backgroundColor: Colors.pink,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: Colors.pink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  arrowCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrow: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  textPrimary: {
+    ...Typography.button,
+    color: Colors.white,
+    marginLeft: 8,
   },
 });

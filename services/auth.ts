@@ -12,8 +12,12 @@ export const authService = {
     });
     if (error) throw error;
 
-    // Napravi profil u bazi
-    if (data.user) {
+    if (data?.user) {
+      // Ako nakon signUp-a odmah dobijemo sesiju, postavićemo je ručno za svaki slučaj
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -21,7 +25,12 @@ export const authService = {
           full_name: fullName,
           email,
         });
-      if (profileError) throw profileError;
+        
+      if (profileError) {
+        // Ako baza i dalje pravi problem sa Row Level Security politikom, 
+        // to znači da sesija još nije stigla da se osveži na telefonu.
+        throw profileError;
+      }
     }
     return data;
   },
