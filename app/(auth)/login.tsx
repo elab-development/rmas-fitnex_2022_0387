@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Input } from '../../components/ui/Input';
@@ -116,21 +117,35 @@ export default function Login() {
           </Text>
         </TouchableOpacity>
         <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => Linking.openURL('https://www.instagram.com')}
+            activeOpacity={0.7}
+          >
             <Image
               source={require('../../assets/icons8-instagram-logo-50.png')}
               style={styles.socialIcon}
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
+
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => Linking.openURL('https://www.facebook.com')}
+            activeOpacity={0.7}
+          >
             <Image
               source={require('../../assets/icons8-facebook-logo-50.png')}
               style={styles.socialIcon}
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
+
+          <TouchableOpacity 
+            style={styles.socialButton}
+            onPress={() => Linking.openURL('https://www.linkedin.com')}
+            activeOpacity={0.7}
+          >
             <Image
               source={require('../../assets/icons8-linkedin-logo-50.png')}
               style={styles.socialIcon}
@@ -150,7 +165,7 @@ export default function Login() {
               Sign Up.
             </Text>
           </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
             <Text style={styles.link}>Forgot Password</Text>
           </TouchableOpacity>
         </View>
