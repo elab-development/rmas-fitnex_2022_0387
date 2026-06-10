@@ -1,7 +1,7 @@
 {
   "name": "rmas-fitnex_2022_0387",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.4.2",
     "@react-navigation/bottom-tabs": "^7.17.2",
@@ -13,6 +13,7 @@
     "expo-font": "^56.0.5",
     "expo-image-picker": "^56.0.16",
     "expo-linear-gradient": "^56.0.4",
+    "expo-linking": "^56.0.13",
     "expo-local-authentication": "^56.0.4",
     "expo-location": "^56.0.16",
     "expo-notifications": "^56.0.16",
@@ -24,7 +25,7 @@
     "react-native": "0.81.5",
     "react-native-gesture-handler": "^3.0.0",
     "react-native-maps": "^1.27.2",
-    "react-native-reanimated": "^4.4.1",
+    "react-native-reanimated": "^3.10.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0"
   },
@@ -34,5 +35,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
 }
