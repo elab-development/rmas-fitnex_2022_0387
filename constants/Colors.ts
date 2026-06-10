@@ -1,0 +1,18 @@
+export const Colors = {
+  pink: '#FF5DA3',
+  darkPink: '#C42B76',
+  lightPink: '#FFB3D9',
+  white: '#FFFFFF',
+  black: '#000000',
+  gray: '#E6E5E5',
+  darkGray: '#514B4B',
+  background: '#FFFFFF',
+  backgroundDark: '#1A1A1A',
+  error: '#FF4444',
+  success: '#4CAF50',
+  textPrimary: '#000000',
+  textSecondary: '#514B4B',
+  textLight: '#999999',
+  gradientStart: '#FF5DA3',
+  gradientEnd: '#C42B76',
+};
