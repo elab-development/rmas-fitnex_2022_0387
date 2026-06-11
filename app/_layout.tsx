@@ -8,6 +8,7 @@ import {
 } from '@expo-google-fonts/montserrat';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { notificationService } from '../services/notifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,11 +17,23 @@ export default function RootLayout() {
     Montserrat_400Regular,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
+    
   });
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    setupNotifications();
+  }, []);
+
+  const setupNotifications = async () => {
+    const granted = await notificationService.requestPermissions();
+    if (granted) {
+      await notificationService.scheduleDailyReminders();
+    }
+  };
 
   if (!fontsLoaded) return null;
 

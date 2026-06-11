@@ -19,6 +19,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../services/supabase';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { Colors } from '../../constants/Colors';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -34,7 +36,7 @@ export default function HomeScreen() {
   const [trackWidth, setTrackWidth] = useState(0);
   
   const scrollViewRef = useRef<ScrollView>(null);
-  
+  const router = useRouter();
   // Pamtimo progres na kom je klizač bio PRE nego što je počelo novo prevlačenje
   const startProgress = useRef<number>(0.3);
 
@@ -369,6 +371,8 @@ const takePhotoWithCamera = async () => {
             </View>
           </View>
 
+         
+
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -376,6 +380,17 @@ const takePhotoWithCamera = async () => {
 }
 
 const styles = StyleSheet.create({
+  mapButton: {
+    position: 'absolute',
+    top: 16,
+    right: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   safeArea: { flex: 1, backgroundColor: '#111214' },
   container: { flex: 1, backgroundColor: '#F9F9F9' },
   headerContainer: {

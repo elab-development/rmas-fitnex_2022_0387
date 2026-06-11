@@ -2,12 +2,16 @@
   "expo": {
     "name": "rmas-fitnex_2022_0387",
     "slug": "rmas-fitnex_2022_0387",
+    "scheme": "rmas-fitnex_2022_0387",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Fitnex requires Face ID access to log you in quickly and securely."
+      }
     },
     "android": {
       "adaptiveIcon": {

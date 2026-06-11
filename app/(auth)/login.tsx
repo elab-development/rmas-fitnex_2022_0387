@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
   Linking,
+  
 } from 'react-native';
 import { router } from 'expo-router';
 import { Input } from '../../components/ui/Input';
@@ -16,6 +17,9 @@ import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { authService } from '../../services/auth';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { supabase } from '../../services/supabase';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +57,48 @@ export default function Login() {
       setLoading(false);
     }
   };
+  const handleBiometricLogin = async () => {
+  try {
+    // 1. Provera hardvera
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) {
+      Alert.alert('Error', 'Your device does not support biometric authentication');
+      return;
+    }
+
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!isEnrolled) {
+      Alert.alert('Error', 'No biometrics enrolled. Please set up Face ID in system settings.');
+      return;
+    }
+
+    // 2. Pokretanje Face ID skeniranja
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Sign in to Fitnex with Face ID',
+      fallbackLabel: 'Use passcode',
+      cancelLabel: 'Cancel',
+      disableDeviceFallback: false,
+    });
+
+    // 3. Ako je Face ID uspešan, proveravamo token direktno iz osvežene Supabase sesije
+    if (result.success) {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (session && !error) {
+        // Ako sesija postoji, uspešno te prebacujemo unutra
+        router.replace('/(tabs)');
+      } else {
+        // Ako nema sesije, znači da authService.login nije sačuvao token ili si izlogovan
+        Alert.alert(
+          'Authentication Required',
+          'Please sign in with your email and password first to save your session on this device.'
+        );
+      }
+    }
+  } catch (error: any) {
+    Alert.alert('Error', error.message);
+  }
+};
 
   return (
     <ScrollView
@@ -115,6 +161,16 @@ export default function Login() {
           <Text style={styles.buttonText}>
             {loading ? 'Loading...' : 'Sign In  →'}
           </Text>
+        </TouchableOpacity>
+
+        {/* Biometric dugme */}
+        <TouchableOpacity
+          style={styles.biometricButton}
+          onPress={handleBiometricLogin}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="finger-print" size={28} color={Colors.pink} />
+          <Text style={styles.biometricText}>Sign in with Face ID / Fingerprint</Text>
         </TouchableOpacity>
         <View style={styles.socialContainer}>
           <TouchableOpacity 
@@ -277,6 +333,23 @@ const styles = StyleSheet.create({
     color: Colors.pink,
     fontWeight: '600',
     fontSize: 14,
+  },
+  biometricButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.lightPink,
+    marginTop: 12,
+    backgroundColor: '#FFF5F9',
+  },
+  biometricText: {
+    color: Colors.pink,
+    fontSize: 14,
+    fontWeight: '600',
   },
   
 });
