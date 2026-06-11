@@ -39,10 +39,10 @@ export default function Register() {
 
     // Validacija
     let valid = true;
-    if (!fullName) { setNameError('Ime je obavezno'); valid = false; }
-    if (!email) { setEmailError('Email je obavezan'); valid = false; }
-    if (!password) { setPasswordError('Lozinka je obavezna'); valid = false; }
-    if (password.length < 6) { setPasswordError('Lozinka mora imati najmanje 6 karaktera'); valid = false; }
+    if (!fullName) { setNameError('Full name is required'); valid = false; }
+    if (!email) { setEmailError('Email is required'); valid = false; }
+    if (!password) { setPasswordError('Password is required'); valid = false; }
+    if (password.length < 6) { setPasswordError('Password must be at least 6 characters long'); valid = false; }
     if (password !== confirmPassword) { setConfirmError("ERROR: Password Don't Match!"); valid = false; }
     if (!valid) return;
 
@@ -50,12 +50,12 @@ export default function Register() {
     try {
       await authService.register(email, password, fullName);
       Alert.alert(
-        'Uspešno!',
-        'Nalog je kreiran. Možeš se prijaviti.',
-        [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
+        'Success!',
+        'Account created successfully!',
+        [{ text: 'OK', onPress: () => router.replace('/(auth)/setup-profile') }]
       );
     } catch (error: any) {
-      Alert.alert('Greška', error.message || 'Registracija nije uspela');
+      Alert.alert('Error', error.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ export default function Register() {
       <View style={styles.form}>
         <Input
           label="Full Name"
-          placeholder="Ime i prezime"
+          placeholder="John Doe"
           value={fullName}
           onChangeText={setFullName}
           icon="person-outline"

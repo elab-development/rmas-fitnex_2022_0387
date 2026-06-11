@@ -24,6 +24,7 @@ export const authService = {
           id: data.user.id,
           full_name: fullName,
           email,
+          profile_completed: false,
         });
         
       if (profileError) {
