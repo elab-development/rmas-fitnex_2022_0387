@@ -100,6 +100,7 @@ export default function NutritionScreen() {
 
   const applyFilter = (filter: string) => {
     setActiveFilter(filter);
+     console.log('meals meal_types:', meals.map(m => m.meal_type));
     if (filter === 'All') setFiltered(meals);
     else setFiltered(meals.filter(m => m.meal_type === filter));
   };
@@ -142,85 +143,94 @@ export default function NutritionScreen() {
           >
             <Ionicons name="add-circle-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="share-outline" size={24} color="#333" />
-          </TouchableOpacity>
+          <TouchableOpacity
+    style={styles.iconButton}
+    onPress={() => router.push('/scan-barcode')}
+  >
+    <Ionicons name="barcode-outline" size={24} color="#333" />
+  </TouchableOpacity>
+  
+  <TouchableOpacity style={styles.iconButton}>
+    <Ionicons name="share-outline" size={24} color="#333" />
+  </TouchableOpacity>
         </View>
       </View>
 
-      {/* Calendar strip */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarStrip}>
-        {days.map((day, i) => {
-          const isSelected = isSameDay(day, selectedDate);
-          return (
-            <TouchableOpacity
-              key={i}
-              style={[styles.dayItem, isSelected && styles.dayItemSelected]}
-              onPress={() => { setSelectedDate(day); fetchMeals(day); }}
-            >
-              <Text style={[styles.dayMonth, isSelected && styles.dayTextSelected]}>
-                {MONTH_NAMES[day.getMonth()]}
-              </Text>
-              <Text style={[styles.dayNumber, isSelected && styles.dayTextSelected]}>
-                {day.getDate()}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+ {/* Calendar strip */}
+<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ height: 70 }} contentContainerStyle={{ alignItems: 'center', paddingHorizontal: 12 }}>
+  {days.map((day, i) => {
+    const isSelected = isSameDay(day, selectedDate);
+    return (
+      <TouchableOpacity
+        key={i}
+        style={[styles.dayItem, isSelected && styles.dayItemSelected]}
+        onPress={() => { setSelectedDate(day); fetchMeals(day); }}
+      >
+        <Text style={[styles.dayMonth, isSelected && styles.dayTextSelected]}>
+          {MONTH_NAMES[day.getMonth()]}
+        </Text>
+        <Text style={[styles.dayNumber, isSelected && styles.dayTextSelected]}>
+          {day.getDate()}
+        </Text>
+      </TouchableOpacity>
+    );
+  })}
+</ScrollView>
 
-      {/* Filters */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterStrip}>
-        {FILTERS.map(f => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
-            onPress={() => applyFilter(f)}
-          >
-            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+{/* Filters - Izmenjeno: Zamenjen ScrollView sa View */}
+<View style={styles.filterContainer}>
+  {FILTERS.map(f => (
+    <TouchableOpacity
+      key={f}
+      style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
+      onPress={() => applyFilter(f)}
+    >
+      <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
+        {f}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
-      {/* Meals list */}
-      {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.pink} />
-        </View>
-      ) : filtered.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.noMealsText}>No meals for this day.</Text>
-          <Text style={styles.noMealsSubText}>Tap + to add your first meal!</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
-          renderItem={({ item }) => (
-            <View style={styles.mealCard}>
-              {item.image_url ? (
-                <Image source={{ uri: item.image_url }} style={styles.mealImage} />
-              ) : (
-                <View style={[styles.mealImage, styles.mealImagePlaceholder]}>
-                  <Ionicons name="restaurant-outline" size={24} color="#ccc" />
-                </View>
-              )}
-              <View style={styles.mealInfo}>
-                <Text style={styles.mealName} numberOfLines={1}>{item.name}</Text>
-                <Text style={styles.mealCal}>🔥 {item.calories} kcal</Text>
-                <View style={styles.macroRow}>
-                  <Text style={styles.macroText}>{item.protein_g}g Protein</Text>
-                  <Text style={styles.macroText}>{item.fat_g}g Fat</Text>
-                  <Text style={styles.macroText}>{item.carbs_g}g Carbs</Text>
-                </View>
-              </View>
+{/* Meals list - Sada je uslov unutar fiksiranog kontejnera */}
+<View style={{ flex: 1, width: '100%' }}>
+  {loading ? (
+    <View style={styles.centered}>
+      <ActivityIndicator size="large" color={Colors.pink} />
+    </View>
+  ) : filtered.length === 0 ? (
+    <View style={[styles.centered, { justifyContent: 'center', paddingTop: 60 }]}>
+      <Text style={styles.noMealsText}>No meals for this day.</Text>
+      <Text style={styles.noMealsSubText}>Tap + to add your first meal!</Text>
+    </View>
+  ) : (
+    <FlatList
+      data={filtered}
+      keyExtractor={item => item.id}
+      contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}
+      renderItem={({ item }) => (
+        <View style={styles.mealCard}>
+          {item.image_url ? (
+            <Image source={{ uri: item.image_url }} style={styles.mealImage} />
+          ) : (
+            <View style={[styles.mealImage, styles.mealImagePlaceholder]}>
+              <Ionicons name="restaurant-outline" size={24} color="#ccc" />
             </View>
           )}
-        />
+          <View style={styles.mealInfo}>
+            <Text style={styles.mealName} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.mealCal}>🔥 {item.calories} kcal</Text>
+            <View style={styles.macroRow}>
+              <Text style={styles.macroText}>{item.protein_g}g Protein</Text>
+              <Text style={styles.macroText}>{item.fat_g}g Fat</Text>
+              <Text style={styles.macroText}>{item.carbs_g}g Carbs</Text>
+            </View>
+          </View>
+        </View>
       )}
+    />
+  )}
+</View>
 
       {/* Food Added Modal */}
       <Modal visible={showModal} transparent animationType="fade">
@@ -278,28 +288,45 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: '#f2f2f2', alignItems: 'center', justifyContent: 'center',
   },
-  calendarStrip: { paddingHorizontal: 12, marginBottom: 12 },
-  dayItem: {
-    alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20, marginHorizontal: 4,
-  },
-  dayItemSelected: { backgroundColor: Colors.pink },
+calendarStrip: { height: 70, paddingHorizontal: 12, marginBottom: 12 },
+dayItem: {
+  width: 56,
+  height: 60,
+  alignItems: 'center', justifyContent: 'center',
+  borderRadius: 20, marginHorizontal: 4,
+  paddingVertical: 0,
+},
+dayItemSelected: { backgroundColor: Colors.pink, height: 60 },
   dayMonth: { fontSize: 11, color: '#888' },
   dayNumber: { fontSize: 16, fontWeight: '700', color: '#1a1a1a' },
   dayTextSelected: { color: '#fff' },
-  filterStrip: { paddingHorizontal: 16, marginBottom: 8 },
-  filterChip: {
-    paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20,
-    borderWidth: 1, borderColor: '#ddd', marginRight: 8, backgroundColor: '#fff',
-  },
+filterStrip: { height: 44, paddingHorizontal: 16, marginBottom: 8 },
+
   filterChipActive: { backgroundColor: Colors.pink, borderColor: Colors.pink },
-  filterText: { fontSize: 13, color: '#666' },
+  filterText: { fontSize: 12, color: '#666' },
   filterTextActive: { color: '#fff', fontWeight: '600' },
   mealCard: {
     flexDirection: 'row', backgroundColor: '#fafafa', borderRadius: 16,
     padding: 12, alignItems: 'center',
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
+  filterContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 8,
+  paddingHorizontal: 16,
+  marginBottom: 12,
+},
+filterChip: {
+  paddingHorizontal: 16,
+  height: 36,
+  alignItems: 'center', 
+  justifyContent: 'center',
+  borderRadius: 18,
+  borderWidth: 1, 
+  borderColor: '#ddd', 
+  backgroundColor: '#fff',
+},
   mealImage: { width: 64, height: 64, borderRadius: 32, marginRight: 12 },
   mealImagePlaceholder: { backgroundColor: '#f0f0f0', alignItems: 'center', justifyContent: 'center' },
   mealInfo: { flex: 1 },
