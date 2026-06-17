@@ -107,6 +107,7 @@ export default function AIChatScreen() {
       });
 
       const data = await response.json();
+      console.log('Groq response:', JSON.stringify(data));
       const assistantText = data.choices?.[0]?.message?.content
         || "I couldn't process that. Please try again.";
 

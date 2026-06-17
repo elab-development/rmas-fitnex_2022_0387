@@ -125,7 +125,7 @@ const panResponder = useRef(
     return;
   }
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
     allowsEditing: true,
     aspect: [1, 1],
     quality: 0.8,
@@ -151,12 +151,14 @@ const takePhotoWithCamera = async () => {
   }
 };
 
-  const uploadAvatar = async (uri: string) => {
+const uploadAvatar = async (uri: string) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.log('NO USER!');
+      return;
+    }
 
-    // Pretvori sliku u blob
     const response = await fetch(uri);
     const blob = await response.blob();
     const arrayBuffer = await new Response(blob).arrayBuffer();
@@ -164,7 +166,8 @@ const takePhotoWithCamera = async () => {
     const fileExt = uri.split('.').pop() || 'jpg';
     const fileName = `${user.id}/avatar.${fileExt}`;
 
-    // Upload na Supabase Storage
+    console.log('Uploading to:', fileName);
+
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, arrayBuffer, {
@@ -172,23 +175,35 @@ const takePhotoWithCamera = async () => {
         upsert: true,
       });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.log('Upload error:', uploadError);
+      Alert.alert('Upload Error', uploadError.message);
+      return;
+    }
 
-    // Uzmi public URL
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
+const { data } = supabase.storage
+  .from('avatars')
+  .getPublicUrl(fileName);
 
-    const publicUrl = data.publicUrl;
+console.log('Public URL:', data.publicUrl);
 
-    // Sačuvaj URL u profiles tabelu
-    await supabase
-      .from('profiles')
-      .update({ avatar_url: publicUrl })
-      .eq('id', user.id);
+const { error: updateError } = await supabase
+  .from('profiles')
+  .update({ avatar_url: data.publicUrl })
+  .eq('id', user.id);
 
-    setProfileImage(publicUrl);
+if (updateError) {
+  console.log('Update error:', updateError);
+  return;
+}
+
+const publicUrlWithTimestamp = `${data.publicUrl}?t=${Date.now()}`;
+setProfileImage(publicUrlWithTimestamp);
+Alert.alert('Success', 'Profile photo updated!');
+    Alert.alert('Success', 'Profile photo updated!');
+
   } catch (error: any) {
+    console.log('Upload catch error:', error.message);
     Alert.alert('Error', 'Failed to upload photo: ' + error.message);
   }
 };
