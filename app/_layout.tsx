@@ -24,8 +24,16 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
+
+
+
   useEffect(() => {
     setupNotifications();
+
+    // Log any notification that actually arrives while the app is open,
+    // so it shows up in the notifications history list.
+    const subscription = notificationService.registerReceivedListener();
+    return () => subscription.remove();
   }, []);
 
   const setupNotifications = async () => {
@@ -36,6 +44,7 @@ export default function RootLayout() {
   };
 
   if (!fontsLoaded) return null;
+
 
   return (
     <>

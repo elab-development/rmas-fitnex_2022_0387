@@ -1,4 +1,6 @@
 import * as Notifications from 'expo-notifications';
+import { DAILY_REMINDERS } from '../constants/reminders';
+import { logNotification } from './notificationHistory';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -9,6 +11,7 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
 export const notificationService = {
 
   async requestPermissions() {
@@ -19,59 +22,7 @@ export const notificationService = {
   async scheduleDailyReminders() {
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    const reminders = [
-        {
-            title: '🌅 Rise & Grind!',
-            body: 'Champions wake up early. Log your breakfast and start strong! 💪',
-            hour: 7,
-            minute: 30,
-        },
-        {
-            title: '🔥 Morning Check-in',
-            body: 'Your goals don\'t care about your excuses. Let\'s move! 🏃',
-            hour: 9,
-            minute: 0,
-        },
-        {
-            title: '🥗 Fuel Your Body',
-            body: 'You are what you eat. Log your lunch and stay on track!',
-            hour: 12,
-            minute: 30,
-        },
-        {
-            title: '⚡ Afternoon Boost',
-            body: 'The only bad workout is the one that didn\'t happen. GO! 🏋️',
-            hour: 15,
-            minute: 0,
-        },
-        {
-            title: '💪 Workout Reminder',
-            body: 'Your future self will thank you. Time to hit the gym! 🎯',
-            hour: 17,
-            minute: 30,
-        },
-        {
-            title: '🍽️ Dinner Time',
-            body: 'Don\'t forget to log your dinner. Every meal counts! 🥦',
-            hour: 19,
-            minute: 0,
-        },
-        {
-            title: '📊 Daily Summary',
-            body: 'How did you do today? Check your Fitnex Score! 🏆',
-            hour: 21,
-            minute: 0,
-        },
-        {
-            title: '🌙 Night Recovery',
-            body: 'Rest is part of the process. Great work today, champion! ⭐',
-            hour: 22,
-            minute: 0,
-        },
-        ];
-   
-
-    for (const reminder of reminders) {
+    for (const reminder of DAILY_REMINDERS) {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: reminder.title,
@@ -96,9 +47,27 @@ export const notificationService = {
       },
       trigger: null,
     });
+
+    // Instant notifikacije okidaju odmah, pa ih logujemo odmah
+    // umesto da čekamo OS "received" event.
+    await logNotification(title, body, 'instant');
   },
 
   async cancelAll() {
     await Notifications.cancelAllScheduledNotificationsAsync();
+  },
+
+  /**
+   * Pozvati jednom (npr. u root layout-u) da bi se svaka notifikacija
+   * koja stvarno stigne dok je app otvoren/foregroundovan ulogovala.
+   * Vraća subscription da pozivalac može da ga ukloni pri unmount-u.
+   */
+  registerReceivedListener() {
+    return Notifications.addNotificationReceivedListener((notification) => {
+      const { title, body } = notification.request.content;
+      if (title) {
+        logNotification(title, body ?? '', 'reminder');
+      }
+    });
   },
 };

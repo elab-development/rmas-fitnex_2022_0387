@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,11 @@ import {
   PanResponder,
   PanResponderInstance,
 } from 'react-native';
+import NotificationsModal from '../../components/home/NotificationsModal';
+import RoutineModal from '../../components/home/RoutineModal';
+import FoodCategoryBrowser from '../../components/home/FoodCategoryBrowser';
+import { ROUTINES, RoutineContent } from '../../constants/routines';
+import { getNotificationHistory } from '../../services/notificationHistory';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -48,6 +53,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchProfile();
+    refreshNotifCount();
   }, []);
 
   const fetchProfile = async () => {
@@ -79,6 +85,15 @@ export default function HomeScreen() {
       setLoading(false);
     }
   };
+
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
+  const [selectedRoutine, setSelectedRoutine] = useState<RoutineContent | null>(null);
+
+  const refreshNotifCount = useCallback(async () => {
+    const history = await getNotificationHistory();
+    setNotifCount(history.length);
+  }, []);
 
   const sliderProgressRef = useRef(0.3);
 const trackWidthRef = useRef(0);
@@ -253,11 +268,17 @@ Alert.alert('Success', 'Profile photo updated!');
               </View>
             </View>
 
-            <TouchableOpacity style={styles.notificationButton}>
+            <TouchableOpacity
+              style={styles.notificationButton}
+              onPress={() => setShowNotifications(true)}
+              activeOpacity={0.8}
+            >
               <MaterialCommunityIcons name="bell-badge" size={26} color="#FFFFFF" />
-              <View style={styles.badgeContainer}>
-                <Text style={styles.badgeText}>8+</Text>
-              </View>
+              {notifCount > 0 && (
+                <View style={styles.badgeContainer}>
+                  <Text style={styles.badgeText}>{notifCount > 9 ? '9+' : notifCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -277,39 +298,23 @@ Alert.alert('Success', 'Profile photo updated!');
           {/* BROWSE CATEGORY */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Browse Category</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
+            
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-            <TouchableOpacity style={[styles.categoryTab, styles.categoryTabActive]}>
-              <Ionicons name="flame" size={16} color="#FFFFFF" />
-              <Text style={styles.categoryTabTextActive}>Vegetable</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryTab}>
-              <Ionicons name="heart" size={16} color="#9CA3AF" />
-              <Text style={styles.categoryTabText}>Meat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryTab}>
-              <MaterialCommunityIcons name="food-apple" size={16} color="#9CA3AF" />
-              <Text style={styles.categoryTabText}>Fruit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryTab}>
-              <Text style={styles.categoryTabText}>Carbs</Text>
-            </TouchableOpacity>
-          </ScrollView>
+          <FoodCategoryBrowser onFoodLogged={refreshNotifCount} />
 
           {/* MORNING ROUTINE */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Morning Routine</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
+            
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.routineScroll}>
-            <View style={[styles.routineCard, { backgroundColor: '#E2F4C5' }]}>
+            <TouchableOpacity
+              style={[styles.routineCard, { backgroundColor: '#E2F4C5' }]}
+              activeOpacity={0.85}
+              onPress={() => setSelectedRoutine(ROUTINES.runner)}
+            >
               <View style={styles.routineBadge}>
                 <Text style={styles.routineBadgeText}>Balanced Diet</Text>
               </View>
@@ -320,12 +325,16 @@ Alert.alert('Success', 'Profile photo updated!');
                 style={styles.routineCardImage}
                 resizeMode="contain"
               />
-              <TouchableOpacity style={styles.routineArrowButton}>
+              <View style={styles.routineArrowButton}>
                 <Ionicons name="chevron-forward" size={16} color="#111214" />
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
 
-            <View style={[styles.routineCard, { backgroundColor: '#FFEF96' }]}>
+            <TouchableOpacity
+              style={[styles.routineCard, { backgroundColor: '#FFEF96' }]}
+              activeOpacity={0.85}
+              onPress={() => setSelectedRoutine(ROUTINES.cooking)}
+            >
               <View style={styles.routineBadge}>
                 <Text style={styles.routineBadgeText}>Balanced Diet</Text>
               </View>
@@ -336,12 +345,16 @@ Alert.alert('Success', 'Profile photo updated!');
                 style={styles.routineCardImage}
                 resizeMode="contain"
               />
-              <TouchableOpacity style={styles.routineArrowButton}>
+              <View style={styles.routineArrowButton}>
                 <Ionicons name="chevron-forward" size={16} color="#111214" />
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.moreCard}>
+            <TouchableOpacity
+              style={styles.moreCard}
+              activeOpacity={0.85}
+              onPress={() => setSelectedRoutine(ROUTINES.more)}
+            >
               <Text style={styles.moreCardText}>MORE</Text>
               <View style={styles.moreArrowCircle}>
                 <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
@@ -390,6 +403,19 @@ Alert.alert('Success', 'Profile photo updated!');
 
         </View>
       </ScrollView>
+      <NotificationsModal
+        visible={showNotifications}
+        onClose={() => {
+          setShowNotifications(false);
+          refreshNotifCount();
+        }}
+      />
+
+      <RoutineModal
+        visible={!!selectedRoutine}
+        routine={selectedRoutine}
+        onClose={() => setSelectedRoutine(null)}
+      />
     </SafeAreaView>
   );
 }
