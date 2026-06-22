@@ -32,7 +32,8 @@
         {
           "cameraPermission": "Allow Fitnex to access your camera to scan barcodes."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

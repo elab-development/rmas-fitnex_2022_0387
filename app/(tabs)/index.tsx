@@ -26,18 +26,21 @@ import { supabase } from '../../services/supabase';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Colors } from '../../constants/Colors';
 import { useRouter } from 'expo-router';
+import { useProfile } from '../../context/PorifleProvider';
+
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
+const { profile, profileImage, dailyCalorieGoal, loading, setProfileImage, setDailyCalorieGoal } = useProfile();
+const setDailyCalorieGoalRef = useRef(setDailyCalorieGoal);
+useEffect(() => {
+  setDailyCalorieGoalRef.current = setDailyCalorieGoal;
+}, [setDailyCalorieGoal]);
   const minCalories = 1200;
   const maxCalories = 4000;
-  const [currentCalories, setCurrentCalories] = useState(2000);
-  const [sliderProgress, setSliderProgress] = useState(0.3); // Početna pozicija (30%)
+const [currentCalories, setCurrentCalories] = useState(dailyCalorieGoal);
+const [sliderProgress, setSliderProgress] = useState((dailyCalorieGoal - 1200) / (4000 - 1200));
   const [trackWidth, setTrackWidth] = useState(0);
   
   const scrollViewRef = useRef<ScrollView>(null);
@@ -52,39 +55,16 @@ export default function HomeScreen() {
   });
 
   useEffect(() => {
-    fetchProfile();
-    refreshNotifCount();
-  }, []);
+  refreshNotifCount();
+}, []);
 
-  const fetchProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-      if (data.avatar_url) setProfileImage(data.avatar_url);
-
-      const initialCalories = data.daily_calorie_goal || 2000;
-      setCurrentCalories(initialCalories);
-      
-      const initialProgress = (initialCalories - minCalories) / (maxCalories - minCalories);
-      setSliderProgress(initialProgress);
-      startProgress.current = initialProgress;
-      sliderProgressRef.current = initialProgress;
-
-    } catch (error: any) {
-      console.log('Profile error:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+useEffect(() => {
+  setCurrentCalories(dailyCalorieGoal);
+  const p = (dailyCalorieGoal - 1200) / (4000 - 1200);
+  setSliderProgress(p);
+  sliderProgressRef.current = p;
+  startProgress.current = p;
+}, [dailyCalorieGoal]);
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
@@ -123,9 +103,23 @@ const panResponder = useRef(
     setCurrentCalories(Math.round(calculatedCalories / 10) * 10);
   },
 
-    onPanResponderRelease: () => {
-      scrollViewRef.current?.setNativeProps({ scrollEnabled: true });
-    },
+    onPanResponderRelease: async () => {
+  scrollViewRef.current?.setNativeProps({ scrollEnabled: true });
+  
+  const finalCalories = Math.round((1200 + sliderProgressRef.current * 2800) / 10) * 10;
+  
+  // Update context
+  setDailyCalorieGoalRef.current(finalCalories);
+  
+  // Snimi u Supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase
+      .from('profiles')
+      .update({ daily_calorie_goal: finalCalories })
+      .eq('id', user.id);
+  }
+},
 
     onPanResponderTerminate: () => {
       scrollViewRef.current?.setNativeProps({ scrollEnabled: true });
@@ -215,7 +209,7 @@ if (updateError) {
 const publicUrlWithTimestamp = `${data.publicUrl}?t=${Date.now()}`;
 setProfileImage(publicUrlWithTimestamp);
 Alert.alert('Success', 'Profile photo updated!');
-    Alert.alert('Success', 'Profile photo updated!');
+    
 
   } catch (error: any) {
     console.log('Upload catch error:', error.message);

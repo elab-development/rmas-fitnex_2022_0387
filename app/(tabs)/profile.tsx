@@ -18,6 +18,7 @@ import { supabase } from '../../services/supabase';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Colors } from '../../constants/Colors';
 import { router } from 'expo-router';
+import { useProfile } from '../../context/PorifleProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -33,8 +34,7 @@ const PRO_FEATURES = [
 ];
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const { profile, profileImage, dailyCalorieGoal, loading } = useProfile();
   const [weeklyScores, setWeeklyScores] = useState<any[]>([]);
   const [showProModal, setShowProModal] = useState(false);
   const [todayScore, setTodayScore] = useState<any>(null);
@@ -43,63 +43,48 @@ export default function ProfileScreen() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+const fetchData = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      // Fetch profil
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      setProfile(profileData);
+    // OBRISANO: fetch profila — sad dolazi iz context-a
 
-      // Fetch weekly scores
-      const today = new Date();
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - today.getDay() + 1);
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - today.getDay() + 1);
 
-      const dates = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return d.toISOString().split('T')[0];
-      });
+    const dates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return d.toISOString().split('T')[0];
+    });
 
-      const { data: scoresData } = await supabase
-        .from('daily_scores')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('date', dates);
+    const { data: scoresData } = await supabase
+      .from('daily_scores')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('date', dates);
 
-      // Mapiranje dana sa scorovima
-      const mapped = dates.map((date, i) => {
-        const found = scoresData?.find(s => s.date === date);
-        return {
-          day: DAYS[i],
-          score: found?.score || 0,
-          date,
-        };
-      });
+    const mapped = dates.map((date, i) => {
+      const found = scoresData?.find(s => s.date === date);
+      return { day: DAYS[i], score: found?.score || 0, date };
+    });
 
-      setWeeklyScores(mapped);
+    setWeeklyScores(mapped);
 
-      // Dzenerise today score ako ne postoji
-      const todayStr = today.toISOString().split('T')[0];
-      const todayData = scoresData?.find(s => s.date === todayStr);
-      if (!todayData) {
-        await generateTodayScore(user.id, todayStr, profileData);
-      } else {
-        setTodayScore(todayData);
-      }
-
-    } catch (error: any) {
-      console.log(error.message);
-    } finally {
-      setLoading(false);
+    const todayStr = today.toISOString().split('T')[0];
+    const todayData = scoresData?.find(s => s.date === todayStr);
+    if (!todayData) {
+      await generateTodayScore(user.id, todayStr, profile); // ← profile iz context-a
+    } else {
+      setTodayScore(todayData);
     }
-  };
+
+  } catch (error: any) {
+    console.log(error.message);
+  } 
+};
 
   const generateTodayScore = async (userId: string, date: string, profileData: any) => {
     try {
@@ -191,8 +176,8 @@ export default function ProfileScreen() {
         {/* PROFIL INFO */}
         <View style={styles.profileSection}>
           <View style={styles.avatarWrapper}>
-            {profile?.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+            {profileImage ?(
+              <Image source={{ uri: profileImage }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Ionicons name="person" size={40} color="#9CA3AF" />
@@ -281,7 +266,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statEmoji}>🔥</Text>
-              <Text style={styles.statValue}>{profile?.daily_calorie_goal || '--'}</Text>
+              <Text style={styles.statValue}>{dailyCalorieGoal}</Text>
               <Text style={styles.statLabel}>Daily Intake</Text>
             </View>
           </View>
