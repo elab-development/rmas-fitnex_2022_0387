@@ -34,7 +34,7 @@ const PRO_FEATURES = [
 ];
 
 export default function ProfileScreen() {
-const { profile, profileImage, dailyCalorieGoal, loading } = useProfile();
+const { profile, profileImage, dailyCalorieGoal, loading, todaySteps } = useProfile();
   const [weeklyScores, setWeeklyScores] = useState<any[]>([]);
   const [showProModal, setShowProModal] = useState(false);
   const [todayScore, setTodayScore] = useState<any>(null);
@@ -290,20 +290,24 @@ const fetchData = async () => {
                     {todayScore.calories_completed ? '+40pts' : '0pts'}
                   </Text>
                 </View>
-                <View style={styles.todayItem}>
-                  <Text style={styles.todayEmoji}>👟</Text>
-                  <Text style={styles.todayLabel}>Steps</Text>
-                  <Text style={[styles.todayStatus, { color: todayScore.steps_completed ? Colors.success : Colors.error }]}>
-                    {todayScore.steps_completed ? '+20pts' : '0pts'}
-                  </Text>
-                </View>
+                
               </View>
               <View style={styles.todayTotal}>
                 <Text style={styles.todayTotalText}>Total today: {todayScore.score} pts</Text>
               </View>
             </View>
           )}
-
+{/* Steps */}
+<View style={styles.stepsCard}>
+  <Text style={styles.todayTitle}>Today's Steps</Text>
+  <View style={styles.stepsRow}>
+    <Text style={styles.todayEmoji}>👟</Text>
+    <Text style={styles.stepsNumber}>{todaySteps.toLocaleString()}</Text>
+    <Text style={[styles.todayStatus, { color: todaySteps >= 10000 ? Colors.success : Colors.error }]}>
+      {todaySteps >= 10000 ? 'Goal reached! +20pts' : `${10000 - todaySteps} steps to go`}
+    </Text>
+  </View>
+</View>
           {/* LOGOUT */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color={Colors.error} />
@@ -769,4 +773,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  todayStepsCount: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  stepsCard: {
+  backgroundColor: Colors.white,
+  borderRadius: 20,
+  padding: 16,
+  borderWidth: 1,
+  borderColor: Colors.gray,
+},
+stepsRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 12,
+},
+stepsNumber: {
+  fontSize: 28,
+  fontWeight: '800',
+  color: Colors.textPrimary,
+},
 });

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
+import { Pedometer } from 'expo-sensors';
 
 interface Profile {
   id: string;
@@ -10,6 +11,7 @@ interface Profile {
   age: number;
   weight: number;
   membership_type: string;
+
 }
 
 interface ProfileContextType {
@@ -20,6 +22,7 @@ interface ProfileContextType {
   setProfileImage: (url: string) => void;
   setDailyCalorieGoal: (cal: number) => void;
   refreshProfile: () => Promise<void>;
+    todaySteps: number;
 }
 
 const ProfileContext = createContext<ProfileContextType | null>(null);
@@ -29,6 +32,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profileImage, setProfileImageState] = useState<string | null>(null);
   const [dailyCalorieGoal, setDailyCalorieGoalState] = useState(2000);
   const [loading, setLoading] = useState(true);
+  const [todaySteps, setTodaySteps] = useState(0);
 
   const refreshProfile = useCallback(async () => {
     try {
@@ -53,9 +57,30 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    refreshProfile();
-  }, []);
+useEffect(() => {
+  refreshProfile();
+}, []);
+
+useEffect(() => {
+  let subscription: any;
+
+ const startPedometer = async () => {
+  const isAvailable = await Pedometer.isAvailableAsync();
+  console.log('Pedometer available:', isAvailable);
+  if (!isAvailable) return;
+
+  subscription = Pedometer.watchStepCount(result => {
+    console.log('New steps:', result.steps);
+    setTodaySteps(prev => prev + result.steps);
+  });
+};
+
+  startPedometer();
+
+  return () => {
+    if (subscription) subscription.remove();
+  };
+}, []);
 
   const setProfileImage = (url: string) => setProfileImageState(url);
   const setDailyCalorieGoal = (cal: number) => setDailyCalorieGoalState(cal);
@@ -69,6 +94,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setProfileImage,
       setDailyCalorieGoal,
       refreshProfile,
+      todaySteps,
     }}>
       {children}
     </ProfileContext.Provider>
