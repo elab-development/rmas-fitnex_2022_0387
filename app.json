@@ -22,14 +22,17 @@
       },
       "permissions": [
         "android.permission.ACTIVITY_RECOGNITION",
-    "android.permission.ACCESS_FINE_LOCATION",
-    "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "config": {
-    "googleMaps": {
-      "apiKey": "${EXPO_PUBLIC_GOOGLE_MAPS_KEY}"
-    }
-  }
+        "googleMaps": {
+          "apiKey": "${EXPO_PUBLIC_GOOGLE_MAPS_KEY}"
+        }
+      },
+      "package": "com.fitnex.app"
     },
     "web": {
       "favicon": "./assets/LOGO 1.png"
@@ -51,11 +54,17 @@
         }
       ],
       [
-    "expo-location",
-    {
-      "locationAlwaysAndWhenInUsePermission": "Allow Fitnex to use your location to find nearby gyms."
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Fitnex to use your location to find nearby gyms."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5698e6e9-33c2-4062-b696-39ad8a4e95e9"
+      }
     }
-  ]
-    ]
   }
 }
