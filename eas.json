@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 20.3.0",
+    "version": ">= 14.4.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -9,7 +9,10 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "NPM_FLAGS": "--legacy-peer-deps"
+      }
     },
     "production": {
       "autoIncrement": true
