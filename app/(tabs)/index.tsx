@@ -27,12 +27,17 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Colors } from '../../constants/Colors';
 import { useRouter } from 'expo-router';
 import { useProfile } from '../../context/PorifleProvider';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
 const { profile, profileImage, dailyCalorieGoal, loading, setProfileImage, setDailyCalorieGoal } = useProfile();
+const [location, setLocation] = useState<Location.LocationObject | null>(null);
+const [gyms, setGyms] = useState<any[]>([]);
+const [loadingMap, setLoadingMap] = useState(false);
 const setDailyCalorieGoalRef = useRef(setDailyCalorieGoal);
 useEffect(() => {
   setDailyCalorieGoalRef.current = setDailyCalorieGoal;
@@ -56,6 +61,7 @@ const [sliderProgress, setSliderProgress] = useState((dailyCalorieGoal - 1200) /
 
   useEffect(() => {
   refreshNotifCount();
+  getLocation();
 }, []);
 
 useEffect(() => {
@@ -74,7 +80,38 @@ useEffect(() => {
     const history = await getNotificationHistory();
     setNotifCount(history.length);
   }, []);
+const fetchNearbyGyms = async (lat: number, lng: number) => {
+  try {
+    const query = `[out:json];node["leisure"="fitness_centre"](around:3000,${lat},${lng});out body;`;
+    const url = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
+    const response = await fetch(url);
+    const text = await response.text();
+    console.log('Response text:', text.substring(0, 200));
+    const data = JSON.parse(text);
+    console.log('Gyms found:', data.elements?.length);
+    if (data.elements) setGyms(data.elements);
+  } catch (e: any) {
+    console.log('Gyms error:', e.message);
+  }
+};
 
+const getLocation = async () => {
+  setLoadingMap(true);
+  try {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Allow location access to see nearby gyms.');
+      return;
+    }
+    const loc = await Location.getCurrentPositionAsync({});
+    setLocation(loc);
+    await fetchNearbyGyms(loc.coords.latitude, loc.coords.longitude);
+  } catch (e: any) {
+    console.log('Location error:', e.message);
+  } finally {
+    setLoadingMap(false);
+  }
+};
   const sliderProgressRef = useRef(0.3);
 const trackWidthRef = useRef(0);
 
@@ -289,14 +326,43 @@ Alert.alert('Success', 'Profile photo updated!');
         {/* DONJI BELI DEO */}
         <View style={styles.bodyContainer}>
 
-          {/* BROWSE CATEGORY */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Browse Category</Text>
-            
-          </View>
+        {/* NEARBY GYMS MAP */}
+<Text style={styles.sectionTitle}>Nearby Gyms</Text>
 
-          <FoodCategoryBrowser onFoodLogged={refreshNotifCount} />
-
+{loadingMap ? (
+  <LoadingSpinner message="Finding gyms near you..." />
+) : location ? (
+  <View style={styles.mapContainer}>
+    <MapView
+      provider={PROVIDER_GOOGLE}
+      style={styles.map}
+      initialRegion={{
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }}
+      showsUserLocation
+    >
+      {gyms.map((gym, index) => (
+        <Marker
+    key={index}
+    coordinate={{
+      latitude: gym.lat,
+      longitude: gym.lon,
+    }}
+    title={gym.tags?.name || 'Gym'}
+    description={gym.tags?.['addr:street'] || ''}
+    pinColor="#FF5290"
+  />
+      ))}
+    </MapView>
+  </View>
+) : (
+  <Text style={{ color: '#9CA3AF', textAlign: 'center', marginBottom: 16 }}>
+    Location not available
+  </Text>
+)}
           {/* MORNING ROUTINE */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Morning Routine</Text>
@@ -618,4 +684,16 @@ const styles = StyleSheet.create({
     shadowRadius: 2.22,
   },
   sliderThumbInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFA07A' },
+  mapContainer: {
+  width: '100%',
+  height: 300,
+  borderRadius: 20,
+  overflow: 'hidden',
+  marginBottom: 24,
+  marginTop: 12,
+},
+map: {
+  width: '100%',
+  height: '100%',
+},
 });
