@@ -27,7 +27,7 @@
       ],
       "config": {
     "googleMaps": {
-      "apiKey": "AIzaSyBYtoLuty-51jxGFKdGdpTJ0ULFgsRQ1AI"
+      "apiKey": "${EXPO_PUBLIC_GOOGLE_MAPS_KEY}"
     }
   }
     },

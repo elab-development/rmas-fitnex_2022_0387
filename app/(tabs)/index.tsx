@@ -312,16 +312,8 @@ Alert.alert('Success', 'Profile photo updated!');
               )}
             </TouchableOpacity>
           </View>
+ </View>
 
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search our food database..."
-              placeholderTextColor="#9CA3AF"
-            />
-            <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-          </View>
-        </View>
 
         {/* DONJI BELI DEO */}
         <View style={styles.bodyContainer}>
@@ -546,16 +538,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   badgeText: { color: '#FFFFFF', fontSize: 8, fontWeight: '800' },
-  searchContainer: {
-    backgroundColor: '#2D2F33',
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 52,
-  },
-  searchInput: { flex: 1, color: '#FFFFFF', fontSize: 15, fontWeight: '500' },
-  searchIcon: { marginLeft: 8 },
+
   bodyContainer: { paddingHorizontal: 24, paddingTop: 24 },
   sectionHeader: {
     flexDirection: 'row',
