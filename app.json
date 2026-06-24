@@ -58,6 +58,16 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Fitnex to use your location to find nearby gyms."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
       ]
     ],
     "extra": {

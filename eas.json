@@ -15,11 +15,13 @@
         "disabled": true
       },
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NODE_ENV": "production"
       }
     },
     "production": {
-      "autoIncrement": true
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
   },
   "submit": {
